@@ -1,0 +1,42 @@
+import os
+from dotenv import load_dotenv
+from langgraph.graph import StateGraph,START,END
+from langchain.chat_models import init_chat_model
+from random import randint
+from pydantic import BaseModel
+
+
+load_dotenv()
+
+llm=init_chat_model(model=os.getenv('MODEL'))
+
+class ReviewState(BaseModel):
+    comment :str=""
+    score:int=0
+    text:str=""
+
+def score(state:ReviewState):
+    state.score=randint(1,10)
+    return state
+
+def commenter(state:ReviewState):
+    if state.score>5:
+        state.comment= "well done!"
+    else:
+        state.comment="Need Improvement!"
+
+    return state
+
+graph=StateGraph(ReviewState)
+graph.add_node("score",score)
+graph.add_node("commenter",commenter)
+
+graph.add_edge(START,"score")
+graph.add_edge("score","commenter")
+graph.add_edge("commenter",END)
+
+final_graph=graph.compile()
+
+res=final_graph.invoke({})
+print(res)
+

@@ -1,0 +1,4 @@
+langchain
+langgraph
+dotenv
+langgraph-checkpoint-sqlite
